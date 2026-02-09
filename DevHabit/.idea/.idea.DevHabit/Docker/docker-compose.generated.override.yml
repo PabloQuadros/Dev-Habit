@@ -1,0 +1,22 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  devhabit.api:
+    build:
+      context: "C:\\Projetos\\DevHabit"
+      dockerfile: "DevHabit.Api/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/DevHabit.Api.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      NUGET_PACKAGES: "C:\\Users\\pablo\\.nuget\\packages"
+      NUGET_FALLBACK_PACKAGES: "C:\\Users\\pablo\\.nuget\\packages"
+    image: "devhabitapi:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\pablo\\.nuget\\packages:/root/.nuget/fallbackpackages"
+    - "C:\\Projetos\\DevHabit\\DevHabit.Api:/app:rw"
+    - "C:\\Projetos\\DevHabit:/src:rw"
+    working_dir: "/app"
