@@ -5,9 +5,9 @@ services:
       context: .
       dockerfile: DevHabit.Api/Dockerfile
     ports:
-      - 5000:8000
+      - 5000:8080
       - 5001:8081
-    environment: 
+    environment:
       #Seq
       # - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.seq:5341/ingest/otlp
       # - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobut
@@ -15,7 +15,10 @@ services:
       #Aspire Dashboard
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.aspire-dashboard:18889
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
-    
+    depends_on:
+      devhabit.postgres:
+        condition: service_healthy
+   
   devhabit.postgres:
     image: postgres:17.2
     environment: 

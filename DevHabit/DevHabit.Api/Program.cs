@@ -54,7 +54,10 @@ if (app.Environment.IsDevelopment())
     await app.ApplyMigrationsAsync();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.MapControllers();
 
