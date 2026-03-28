@@ -50,7 +50,7 @@ public static class DependencyInjection
                 options.DefaultApiVersion = new ApiVersion(1.0);
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.ReportApiVersions = true;
-                options.ApiVersionSelector = new CurrentImplementationApiVersionSelector(options);
+                options.ApiVersionSelector = new DefaultApiVersionSelector(options);
 
                 options.ApiVersionReader = ApiVersionReader.Combine(
                     new MediaTypeApiVersionReader(),
