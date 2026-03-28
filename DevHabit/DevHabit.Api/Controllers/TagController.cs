@@ -1,6 +1,8 @@
 ﻿using DevHabit.Api.Database;
+using DevHabit.Api.DTOs.Common;
 using DevHabit.Api.DTOs.Tags;
 using DevHabit.Api.Entities;
+using DevHabit.Api.Services;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +13,10 @@ namespace DevHabit.Api.Controllers;
 
 [ApiController]
 [Route("tags")]
-public sealed class TagController(ApplicationDbContext dbContext) : ControllerBase
+public sealed class TagController(ApplicationDbContext dbContext, LinkService linkService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<TagsCollectionDto>> GetTags()
+    public async Task<ActionResult<TagsCollectionDto>> GetTags([FromHeader] AcceptHeaderDto acceptHeader)
     {
         List<TagDto> tags = await dbContext
             .Tags
@@ -26,11 +28,16 @@ public sealed class TagController(ApplicationDbContext dbContext) : ControllerBa
             Items = tags
         };
         
+        if (acceptHeader.IncludeLinks)
+        {
+            tagsCollectionDto.Links = CreateLinksForTags();
+        }
+        
         return Ok(tagsCollectionDto);
     }
     
     [HttpGet("{id}")]
-    public async Task<ActionResult<TagDto>> GetTag(string id)
+    public async Task<ActionResult<TagDto>> GetTag(string id, [FromHeader] AcceptHeaderDto acceptHeader)
     {
         TagDto? tagDto = await dbContext
             .Tags
@@ -41,6 +48,11 @@ public sealed class TagController(ApplicationDbContext dbContext) : ControllerBa
         if (tagDto is null)
         {
             return NotFound();
+        }
+        
+        if (acceptHeader.IncludeLinks)
+        {
+            tagDto.Links = CreateLinksForTag(id);
         }
         
         return Ok(tagDto);
@@ -114,5 +126,28 @@ public sealed class TagController(ApplicationDbContext dbContext) : ControllerBa
         await dbContext.SaveChangesAsync();
         
         return NoContent();
+    }
+    
+    private List<LinkDto> CreateLinksForTags()
+    {
+        List<LinkDto> links =
+        [
+            linkService.Create(nameof(GetTags), "self", HttpMethods.Get),
+            linkService.Create(nameof(CreateTag), "create", HttpMethods.Post)
+        ];
+
+        return links;
+    }
+
+    private List<LinkDto> CreateLinksForTag(string id)
+    {
+        List<LinkDto> links =
+        [
+            linkService.Create(nameof(GetTag), "self", HttpMethods.Get, new { id }),
+            linkService.Create(nameof(UpdateTag), "update", HttpMethods.Put, new { id }),
+            linkService.Create(nameof(DeleteTag), "delete", HttpMethods.Delete, new { id })
+        ];
+
+        return links;
     }
 }
