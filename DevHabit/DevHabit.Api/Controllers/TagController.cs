@@ -15,13 +15,23 @@ namespace DevHabit.Api.Controllers;
 [ApiController]
 [Route("tags")]
 [Authorize]
-public sealed class TagController(ApplicationDbContext dbContext, LinkService linkService) : ControllerBase
+public sealed class TagController(
+    ApplicationDbContext dbContext,
+    LinkService linkService, 
+    UserContext userContext) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<TagsCollectionDto>> GetTags([FromHeader] AcceptHeaderDto acceptHeader)
     {
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        
         List<TagDto> tags = await dbContext
             .Tags
+            .Where(t => t.UserId == userId)
             .Select(TagQueries.ProjectToDto())
             .ToListAsync();
 
@@ -41,9 +51,15 @@ public sealed class TagController(ApplicationDbContext dbContext, LinkService li
     [HttpGet("{id}")]
     public async Task<ActionResult<TagDto>> GetTag(string id, [FromHeader] AcceptHeaderDto acceptHeader)
     {
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        
         TagDto? tagDto = await dbContext
             .Tags
-            .Where(t => t.Id == id)
+            .Where(t => t.Id == id && t.UserId == userId)
             .Select(TagQueries.ProjectToDto())
             .FirstOrDefaultAsync();
 
@@ -66,6 +82,12 @@ public sealed class TagController(ApplicationDbContext dbContext, LinkService li
         IValidator<CreateTagDto> validator,       
         ProblemDetailsFactory problemDetailsFactory)
     {
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        
         ValidationResult validationResult = await validator.ValidateAsync(createTagDto);
 
         if (!validationResult.IsValid)
@@ -78,7 +100,7 @@ public sealed class TagController(ApplicationDbContext dbContext, LinkService li
             return BadRequest(problem);
         }
         
-        Tag tag = createTagDto.ToEntity();
+        Tag tag = createTagDto.ToEntity(userId);
 
         if (await dbContext.Tags.AnyAsync(t => t.Name == tag.Name))
         {
@@ -99,7 +121,13 @@ public sealed class TagController(ApplicationDbContext dbContext, LinkService li
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateTag(string id, UpdateTagDto updateTagDto)
     {
-        Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(t => t.Id == id);
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        
+        Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
         if (tag is null)
         {
@@ -116,7 +144,13 @@ public sealed class TagController(ApplicationDbContext dbContext, LinkService li
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteTag(string id)
     {
-        Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(t => t.Id == id);
+        string? userId = await userContext.GetUserIdAsync();
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        
+        Tag? tag = await dbContext.Tags.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
 
         if (tag is null)
         {

@@ -144,6 +144,10 @@ public static class DependencyInjection
         builder.Services.AddTransient<LinkService>();
         
         builder.Services.AddTransient<TokenProvider>();
+        
+        builder.Services.AddMemoryCache();
+        builder.Services.AddScoped<UserContext>();
+        
         return builder;
     }
 
