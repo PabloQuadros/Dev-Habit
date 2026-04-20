@@ -1,5 +1,5 @@
-﻿using DevHabit.Api.DTOs.Common;
 using Newtonsoft.Json;
+using DevHabit.Api.DTOs.Common;
 
 namespace DevHabit.Api.DTOs.GitHub;
 
@@ -15,4 +15,3 @@ public sealed record GitHubUserProfileDto(
 {
     public List<LinkDto> Links { get; set; }
 }
-

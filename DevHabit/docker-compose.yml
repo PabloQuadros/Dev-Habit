@@ -8,20 +8,16 @@ services:
       - 5000:8080
       - 5001:8081
     environment:
-      #Seq
+      # Seq
       # - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.seq:5341/ingest/otlp
-      # - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobut
-    
-      #Aspire Dashboard
+      # - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      # Aspire Dashboard
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://devhabit.aspire-dashboard:18889
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
-    depends_on:
-      devhabit.postgres:
-        condition: service_healthy
-   
+
   devhabit.postgres:
-    image: postgres:17.2
-    environment: 
+    image: postgres:17.2 # or latest
+    environment:
       POSTGRES_DB: devhabit
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -29,21 +25,20 @@ services:
       - ./.containers/postgres_data:/var/lib/postgresql/data
     ports:
       - 5432:5432
-  
-  #  devhabit.seq:
-#    image: datalust/seq:2024.3
-#    environment:
-#      ACCEPT_EULA: "Y"
-#    volumes:
-#      - ./.containers/seq_data:/data
-#    ports:
-#      - 8080:80
-#      - 5341:5341
-  
-  devgabit.aspire-dashboard:
+
+  devhabit.seq:
+    image: datalust/seq:2024.3 # or latest
+    environment:
+      ACCEPT_EULA: "Y"
+    volumes:
+      - ./.containers/seq_data:/data
+    ports:
+      - 8080:80
+      - 5341:5341
+
+  devhabit.aspire-dashboard:
     image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
     environment:
       DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: true
     ports:
       - 18888:18888
-        

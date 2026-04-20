@@ -15,13 +15,13 @@ internal static class TagMappings
             UpdatedAtUtc = tag.UpdatedAtUtc
         };
     }
-    
-    public static Tag ToEntity(this CreateTagDto dto, string UserId)
+
+    public static Tag ToEntity(this CreateTagDto dto, string userId)
     {
         Tag habit = new()
         {
             Id = $"t_{Guid.CreateVersion7()}",
-            UserId = UserId,
+            UserId = userId,
             Name = dto.Name,
             Description = dto.Description,
             CreatedAtUtc = DateTime.UtcNow
@@ -29,7 +29,7 @@ internal static class TagMappings
 
         return habit;
     }
-    
+
     public static void UpdateFromDto(this Tag tag, UpdateTagDto dto)
     {
         tag.Name = dto.Name;

@@ -6,33 +6,34 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder
     .AddApiServices()
-    .AddErrorHandler()
+    .AddErrorHandling()
     .AddDatabase()
     .AddObservability()
     .AddApplicationServices()
     .AddAuthenticationServices()
-    .AddCorsPolice();
+    .AddBackgroundJobs()
+    .AddCorsPolicy();
 
 WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    
+
     await app.ApplyMigrationsAsync();
-    
+
     await app.SeedInitialDataAsync();
 }
 
 app.UseHttpsRedirection();
 
+app.UseExceptionHandler();
+
+app.UseCors(CorsOptions.PolicyName);
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseExceptionHandler();
-
-app.UseCors(CorsOptions.PolicyName);
 
 await app.RunAsync();

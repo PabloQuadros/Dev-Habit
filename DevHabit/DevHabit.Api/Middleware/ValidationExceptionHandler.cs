@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DevHabit.Api.Middleware;
 
-public class ValidationExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
+public sealed class ValidationExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
@@ -15,7 +15,7 @@ public class ValidationExceptionHandler(IProblemDetailsService problemDetailsSer
         {
             return false;
         }
-        
+
         httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
         var context = new ProblemDetailsContext
         {
@@ -23,21 +23,19 @@ public class ValidationExceptionHandler(IProblemDetailsService problemDetailsSer
             Exception = exception,
             ProblemDetails = new ProblemDetails
             {
-                Detail = "One or more validation errors occurred.",
+                Detail = "One or more validation errors occurred",
                 Status = StatusCodes.Status400BadRequest
             }
         };
-        
+
         var errors = validationException.Errors
             .GroupBy(e => e.PropertyName)
             .ToDictionary(
                 g => g.Key.ToLowerInvariant(),
                 g => g.Select(e => e.ErrorMessage).ToArray()
             );
-        
         context.ProblemDetails.Extensions.Add("errors", errors);
 
         return await problemDetailsService.TryWriteAsync(context);
     }
 }
-

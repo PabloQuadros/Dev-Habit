@@ -1,4 +1,4 @@
-﻿using DevHabit.Api.Database;
+using DevHabit.Api.Database;
 using DevHabit.Api.DTOs.GitHub;
 using DevHabit.Api.Entities;
 using Microsoft.EntityFrameworkCore;

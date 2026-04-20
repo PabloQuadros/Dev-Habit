@@ -6,7 +6,6 @@ using DevHabit.Api.Settings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
 namespace DevHabit.Api.Services;
 
@@ -41,16 +40,16 @@ public sealed class TokenProvider(IOptions<JwtAuthOptions> options)
         };
 
         var handler = new JsonWebTokenHandler();
-        
+
         string accessToken = handler.CreateToken(tokenDescriptor);
-        
+
         return accessToken;
     }
 
     private static string GenerateRefreshToken()
     {
         byte[] randomBytes = RandomNumberGenerator.GetBytes(32);
-        
+
         return Convert.ToBase64String(randomBytes);
     }
 }

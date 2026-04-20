@@ -48,6 +48,7 @@ public sealed class EncryptionService(IOptions<EncryptionOptions> options)
                 throw new InvalidOperationException("Invalid cipher text format.");
             }
 
+            // Extract the IV and cipher text data from the cipher data
             byte[] iv = new byte[IvSize];
             byte[] encryptedData = new byte[cipherData.Length - IvSize];
 

@@ -7,11 +7,11 @@ namespace DevHabit.Api.Services;
 
 public sealed class UserContext(
     IHttpContextAccessor httpContextAccessor,
-    ApplicationDbContext applicationDbContext,
+    ApplicationDbContext dbContext,
     IMemoryCache memoryCache)
 {
     private const string CacheKeyPrefix = "users:id:";
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(30);
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
 
     public async Task<string?> GetUserIdAsync(CancellationToken cancellationToken = default)
     {
@@ -26,15 +26,15 @@ public sealed class UserContext(
         string? userId = await memoryCache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.SetSlidingExpiration(CacheDuration);
-            
-            string? userId = await applicationDbContext.Users
+
+            string? userId = await dbContext.Users
                 .Where(u => u.IdentityId == identityId)
                 .Select(u => u.Id)
                 .FirstOrDefaultAsync(cancellationToken);
-            
+
             return userId;
         });
-        
+
         return userId;
     }
 }

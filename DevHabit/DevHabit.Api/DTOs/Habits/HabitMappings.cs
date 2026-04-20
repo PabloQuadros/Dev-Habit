@@ -5,7 +5,6 @@ namespace DevHabit.Api.DTOs.Habits;
 
 internal static class HabitMappings
 {
-
     public static readonly SortMappingDefinition<HabitDto, Habit> SortMapping = new()
     {
         Mappings =
@@ -33,46 +32,12 @@ internal static class HabitMappings
         ]
     };
 
-    public static Habit ToEntity(this CreateHabitDto dto, string userId)
-    {
-        Habit habit = new()
-        {
-            Id = $"h_{Guid.CreateVersion7()}",
-            UserId =  userId,
-            Name = dto.Name,
-            Description = dto.Description,
-            Type = dto.Type,
-            Frequency = new Frequency
-            {
-                Type = dto.Frequency.Type,
-                TimesPerPeriod = dto.Frequency.TimesPerPeriod
-            },
-            Target = new Target
-            {
-                Value = dto.Target.Value,
-                Unit = dto.Target.Unit
-            },
-            Status = HabitStatus.Ongoing,
-            IsArchived = false,
-            EndDate = dto.EndDate,
-            Milestone = dto.Milestone is not null
-                ? new Milestone
-                {
-                    Target = dto.Milestone.Target,
-                    Current = 0
-                }
-                : null,
-            CreatedAtUtc = DateTime.UtcNow
-        };
-
-        return habit;
-    }
-    
     public static HabitDto ToDto(this Habit habit)
     {
         return new HabitDto
         {
             Id = habit.Id,
+            UserId = habit.UserId,
             Name = habit.Name,
             Description = habit.Description,
             Type = habit.Type,
@@ -96,38 +61,80 @@ internal static class HabitMappings
                     Target = habit.Milestone.Target,
                     Current = habit.Milestone.Current
                 },
+            AutomationSource = habit.AutomationSource,
             CreatedAtUtc = habit.CreatedAtUtc,
             UpdatedAtUtc = habit.UpdatedAtUtc,
             LastCompletedAtUtc = habit.LastCompletedAtUtc
         };
     }
-    
+
+    public static Habit ToEntity(this CreateHabitDto dto, string userId)
+    {
+        Habit habit = new()
+        {
+            Id = $"h_{Guid.CreateVersion7()}",
+            UserId = userId,
+            Name = dto.Name,
+            Description = dto.Description,
+            Type = dto.Type,
+            Frequency = new Frequency
+            {
+                Type = dto.Frequency.Type,
+                TimesPerPeriod = dto.Frequency.TimesPerPeriod
+            },
+            Target = new Target
+            {
+                Value = dto.Target.Value,
+                Unit = dto.Target.Unit
+            },
+            Status = HabitStatus.Ongoing,
+            IsArchived = false,
+            EndDate = dto.EndDate,
+            Milestone = dto.Milestone is not null
+                ? new Milestone
+                {
+                    Target = dto.Milestone.Target,
+                    Current = 0 // Initialize current progress to 0
+                }
+                : null,
+            AutomationSource = dto.AutomationSource,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        return habit;
+    }
+
     public static void UpdateFromDto(this Habit habit, UpdateHabitDto dto)
     {
+        // Update basic properties
         habit.Name = dto.Name;
         habit.Description = dto.Description;
         habit.Type = dto.Type;
         habit.EndDate = dto.EndDate;
+        habit.AutomationSource = dto.AutomationSource;
 
+        // Update frequency (assuming it's immutable, create new instance)
         habit.Frequency = new Frequency
         {
             Type = dto.Frequency.Type,
             TimesPerPeriod = dto.Frequency.TimesPerPeriod
         };
 
+        // Update target
         habit.Target = new Target
         {
             Value = dto.Target.Value,
             Unit = dto.Target.Unit
         };
 
+        // Update milestone if provided
         if (dto.Milestone != null)
         {
-            habit.Milestone ??= new Milestone(); 
+            habit.Milestone ??= new Milestone(); // Create new if doesn't exist
             habit.Milestone.Target = dto.Milestone.Target;
+            // Note: We don't update Milestone.Current from DTO to preserve progress
         }
 
         habit.UpdatedAtUtc = DateTime.UtcNow;
     }
 }
-

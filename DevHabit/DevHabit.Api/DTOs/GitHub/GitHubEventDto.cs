@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace DevHabit.Api.DTOs.GitHub;
 
@@ -36,4 +36,3 @@ public sealed record GitHubCommitDto(
     [property: JsonProperty("message")] string Message,
     [property: JsonProperty("url")] string Url
 );
-

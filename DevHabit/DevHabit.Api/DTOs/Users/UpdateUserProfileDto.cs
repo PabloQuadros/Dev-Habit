@@ -1,6 +1,3 @@
-﻿namespace DevHabit.Api.DTOs.Users;
+namespace DevHabit.Api.DTOs.Users;
 
-public sealed record UpdateUserProfileDto
-{
-    public required string Name { get; set; }
-}
+public sealed record UpdateUserProfileDto(string Name);

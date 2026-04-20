@@ -2,5 +2,5 @@
 
 public sealed record UpsertHabitTagsDto
 {
-    public required List<string> TagIds { get; set; }
+    public required List<string> TagIds { get; init; }
 }

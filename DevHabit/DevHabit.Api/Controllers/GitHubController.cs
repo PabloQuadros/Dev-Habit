@@ -84,4 +84,3 @@ public sealed class GitHubController(
         return Ok(userProfile);
     }
 }
-

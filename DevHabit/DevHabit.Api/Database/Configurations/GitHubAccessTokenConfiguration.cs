@@ -1,4 +1,4 @@
-﻿using DevHabit.Api.Entities;
+using DevHabit.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,16 +9,15 @@ internal sealed class GitHubAccessTokenConfiguration : IEntityTypeConfiguration<
     public void Configure(EntityTypeBuilder<GitHubAccessToken> builder)
     {
         builder.HasKey(gh => gh.Id);
+
         builder.Property(gh => gh.Id).HasMaxLength(500);
-        
         builder.Property(gh => gh.UserId).HasMaxLength(500);
+        builder.Property(gh => gh.Token).HasMaxLength(1000);
+
         builder.HasIndex(gh => gh.UserId).IsUnique();
 
-        builder.Property(gh => gh.Token).HasMaxLength(1000);
-        
         builder.HasOne<User>()
             .WithOne()
             .HasForeignKey<GitHubAccessToken>(gh => gh.UserId);
     }
-    
 }

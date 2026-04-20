@@ -21,7 +21,7 @@ public sealed class LinkService(LinkGenerator linkGenerator, IHttpContextAccesso
         {
             Href = href ?? throw new Exception("Invalid endpoint name provided"),
             Rel = rel,
-            Method = method,
+            Method = method
         };
     }
 }

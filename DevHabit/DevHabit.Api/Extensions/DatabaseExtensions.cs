@@ -18,8 +18,8 @@ public static class DatabaseExtensions
         try
         {
             await applicationDbContext.Database.MigrateAsync();
-            app.Logger.LogInformation("Application database migrations applied successfully."); 
-            
+            app.Logger.LogInformation("Application database migrations applied successfully.");
+
             await identityDbContext.Database.MigrateAsync();
             app.Logger.LogInformation("Identity database migrations applied successfully.");
         }
@@ -46,10 +46,12 @@ public static class DatabaseExtensions
             {
                 await roleManager.CreateAsync(new IdentityRole(Roles.Admin));
             }
+
+            app.Logger.LogInformation("Successfully created roles.");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            app.Logger.LogError(e, "An error occurred while seeding initial data.");
+            app.Logger.LogError(ex, "An error occurred while seeding initial data.");
             throw;
         }
     }
