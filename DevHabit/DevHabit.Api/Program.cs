@@ -26,19 +26,19 @@ if (app.Environment.IsDevelopment())
     await app.SeedInitialDataAsync();
 }
 
-app.UseHttpsRedirection();
-
 app.UseExceptionHandler();
-
+app.UseHttpsRedirection();
 app.UseCors(CorsOptions.PolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseRateLimiter();
 
-//app.UseMiddleware<ETagMiddleware>();
+app.UseUserContextEnrichment();
+//app.UseETag();
 
 app.MapControllers();
 
 await app.RunAsync();
+
+public partial class Program;

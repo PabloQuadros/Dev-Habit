@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace DevHabit.Api.Controllers;
 
@@ -126,22 +125,28 @@ public sealed class EntriesController(
 
         if (!string.IsNullOrWhiteSpace(query.Cursor))
         {
-            string decodedCursor = Base64UrlEncoder.Decode(query.Cursor);
-            entriesQuery = entriesQuery.Where(e => string.Compare(e.Id, decodedCursor) <= 0);
+            var cursor = EntryCursorDto.Decode(query.Cursor);
+            if (cursor is not null)
+            {
+                entriesQuery = entriesQuery.Where(e => 
+                    e.Date < cursor.Date || 
+                    e.Date == cursor.Date && string.Compare(e.Id, cursor.Id) <= 0);
+            }
         }
 
         List<EntryDto> entries = await entriesQuery
-            .OrderByDescending(e => e.Id)
-            .ThenByDescending(e => e.Date)
+            .OrderByDescending(e => e.Date)
+            .ThenByDescending(e => e.Id)
             .Take(query.Limit + 1)
             .Select(EntryQueries.ProjectToDto())
             .ToListAsync();
 
         bool hasNextPage = entries.Count > query.Limit;
-        string? lastEntryId = null;
+        string? nextCursor = null;
         if (hasNextPage)
         {
-            lastEntryId = entries[^1].Id;
+            EntryDto lastEntry = entries[^1];
+            nextCursor = EntryCursorDto.Encode(lastEntry.Id, lastEntry.Date);
             entries.RemoveAt(entries.Count - 1);
         }
 
@@ -155,7 +160,7 @@ public sealed class EntriesController(
 
         if (query.IncludeLinks)
         {
-            paginationResult.Links = CreateLinksForEntriesCursor(query, lastEntryId);
+            paginationResult.Links = CreateLinksForEntriesCursor(query, nextCursor);
         }
 
         return Ok(paginationResult);
@@ -545,7 +550,7 @@ public sealed class EntriesController(
 
     private List<LinkDto> CreateLinksForEntriesCursor(
         EntriesCursorQueryParameters parameters,
-        string? lastEntryId)
+        string? nextCursor)
     {
         List<LinkDto> links =
         [
@@ -565,12 +570,12 @@ public sealed class EntriesController(
             linkService.Create(nameof(CreateEntryBatch), "create-batch", HttpMethods.Post)
         ];
 
-        if (!string.IsNullOrWhiteSpace(lastEntryId))
+        if (!string.IsNullOrWhiteSpace(nextCursor))
         {
             links.Add(linkService.Create(nameof(GetEntriesCursor), "next-page", HttpMethods.Get, new
             {
                 limit = parameters.Limit,
-                cursor = Base64UrlEncoder.Encode(lastEntryId),
+                cursor = nextCursor,
                 fields = parameters.Fields,
                 habitId = parameters.HabitId,
                 fromDate = parameters.FromDate,

@@ -169,7 +169,7 @@ public static class DependencyInjection
             .AddHttpClient("github")
             .ConfigureHttpClient(client =>
             {
-                client.BaseAddress = new Uri("https://api.github.com");
+                client.BaseAddress = new Uri(builder.Configuration.GetSection("GitHub:BaseUrl").Get<string>()!);
 
                 client.DefaultRequestHeaders
                     .UserAgent.Add(new ProductInfoHeaderValue("DevHabit", "1.0"));
@@ -184,7 +184,10 @@ public static class DependencyInjection
             {
                 ContentSerializer = new NewtonsoftJsonContentSerializer()
             })
-            .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.github.com"));
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri(builder.Configuration.GetSection("GitHub:BaseUrl").Get<string>()!);
+            });
             //.AddHttpMessageHandler<DelayHandler>();
             //.InternalRemoveAllResilienceHandlers()
             // Configuring a custom resilience pipeline for the GitHub API client
@@ -262,6 +265,7 @@ public static class DependencyInjection
     {
         builder.Services.AddQuartz(q =>
         {
+            // GitHub automation scheduler
             q.AddJob<GitHubAutomationSchedulerJob>(opts => opts.WithIdentity("github-automation-scheduler"));
 
             q.AddTrigger(opts => opts
@@ -276,8 +280,15 @@ public static class DependencyInjection
                     s.WithIntervalInMinutes(settings.ScanIntervalMinutes)
                         .RepeatForever();
                 }));
-        });
 
+            // Entry import cleanup job - runs daily at 3 AM UTC
+            q.AddJob<CleanupEntryImportJobsJob>(opts => opts.WithIdentity("cleanup-entry-imports"));
+
+            q.AddTrigger(opts => opts
+                .ForJob("cleanup-entry-imports")
+                .WithIdentity("cleanup-entry-imports-trigger")
+                .WithCronSchedule("0 0 3 * * ?", x => x.InTimeZone(TimeZoneInfo.Utc)));
+        });
 
         builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
