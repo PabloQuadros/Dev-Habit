@@ -9,8 +9,7 @@ namespace DevHabit.IntegrationTests.Infrastructure;
 
 public sealed class DevHabitWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
-        .WithImage("postgres:17.2")
+    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder("postgres:17.2")
         .WithDatabase("devhabit")
         .WithUsername("postgres")
         .WithPassword("postgres")
